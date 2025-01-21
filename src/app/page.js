@@ -7,13 +7,13 @@ import Balancer from "react-wrap-balancer";
 import Link from "next/link";
 import { createClient } from '@supabase/supabase-js'
 
-// Initialize Supabase client
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
-// Add this constant at the top of the file after the supabase initialization
+
 const CLOUDINARY_VIDEO_URL = "https://res.cloudinary.com/dgwmwxi45/video/upload/v1737427893/hero-video_tmp0jd.mp4";
 
 export default function HeroSectionWithBeamsAndGrid() {
@@ -144,11 +144,26 @@ export default function HeroSectionWithBeamsAndGrid() {
     if (!video) return;
 
     if (!document.fullscreenElement) {
-      video.requestFullscreen().catch(err => {
-        console.error(`Error attempting to enable fullscreen: ${err.message}`);
-      });
+      // Try all available fullscreen methods for better mobile support
+      if (video.requestFullscreen) {
+        video.requestFullscreen();
+      } else if (video.webkitRequestFullscreen) { // Safari
+        video.webkitRequestFullscreen();
+      } else if (video.mozRequestFullScreen) { // Firefox
+        video.mozRequestFullScreen();
+      } else if (video.msRequestFullscreen) { // IE/Edge
+        video.msRequestFullscreen();
+      }
     } else {
-      document.exitFullscreen();
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
     }
   };
 
@@ -305,58 +320,61 @@ export default function HeroSectionWithBeamsAndGrid() {
                   video.play();
                 }
               }}
-              className="flex items-center gap-2 rounded-lg bg-black/70 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-black/80"
+              className="flex items-center gap-1 rounded-lg bg-black/70 px-2 py-1.5 text-xs sm:text-sm sm:px-4 sm:py-2 font-medium text-white backdrop-blur-sm transition-all hover:bg-black/80"
             >
               <svg 
-                width="20" 
-                height="20" 
+                width="16" 
+                height="16" 
                 viewBox="0 0 24 24" 
                 fill="none" 
                 stroke="currentColor" 
                 strokeWidth="2" 
                 strokeLinecap="round" 
                 strokeLinejoin="round"
+                className="sm:w-5 sm:h-5"
               >
                 <path d="M1 4v16L8 4v16L15 4v16L22 4v16"/>
               </svg>
-              Restart
+              <span className="hidden sm:inline">Restart</span>
             </button>
             <button 
               onClick={toggleMute}
-              className="flex items-center gap-2 rounded-lg bg-black/70 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-black/80"
+              className="flex items-center gap-1 rounded-lg bg-black/70 px-2 py-1.5 text-xs sm:text-sm sm:px-4 sm:py-2 font-medium text-white backdrop-blur-sm transition-all hover:bg-black/80"
             >
               <svg 
-                width="20" 
-                height="20" 
+                width="16" 
+                height="16" 
                 viewBox="0 0 24 24" 
                 fill="none" 
                 stroke="currentColor" 
                 strokeWidth="2" 
                 strokeLinecap="round" 
                 strokeLinejoin="round"
+                className="sm:w-5 sm:h-5"
               >
                 <path d="M11 5L6 9H2v6h4l5 4V5z"/>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
               </svg>
-              {isMuted ? 'Unmute' : 'Mute'}
+              <span className="hidden sm:inline">{isMuted ? 'Unmute' : 'Mute'}</span>
             </button>
             <button 
               onClick={toggleFullscreen}
-              className="flex items-center gap-2 rounded-lg bg-black/70 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-black/80"
+              className="flex items-center gap-1 rounded-lg bg-black/70 px-2 py-1.5 text-xs sm:text-sm sm:px-4 sm:py-2 font-medium text-white backdrop-blur-sm transition-all hover:bg-black/80"
             >
               <svg 
-                width="20" 
-                height="20" 
+                width="16" 
+                height="16" 
                 viewBox="0 0 24 24" 
                 fill="none" 
                 stroke="currentColor" 
                 strokeWidth="2" 
                 strokeLinecap="round" 
                 strokeLinejoin="round"
+                className="sm:w-5 sm:h-5"
               >
                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
               </svg>
-              Fullscreen
+              <span className="hidden sm:inline">Fullscreen</span>
             </button>
           </div>
         </div>
