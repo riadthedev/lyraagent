@@ -111,6 +111,22 @@ export default function HeroSectionWithBeamsAndGrid() {
       });
       setEmail('');
   
+      // Send Discord webhook notification
+      try {
+        await fetch('https://discord.com/api/webhooks/1330993850042286204/ny6p4vKJL8I0YXKke9vJvXMyMc5TxCK6cZUBmIiVDVjdoJ68U8-auUFXuucdS-kkj9et', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            content: `🎉 New Signup: ${email}`,
+          }),
+        });
+      } catch (webhookError) {
+        console.error('Discord webhook error:', webhookError);
+        // Don't throw the error as this is not critical for the user experience
+      }
+  
     } catch (error) {
       console.error('Error in handleEmailSubmit:', error);
       
@@ -123,14 +139,27 @@ export default function HeroSectionWithBeamsAndGrid() {
     }
   };
 
+  const toggleFullscreen = () => {
+    const video = document.getElementById('heroVideo');
+    if (!video) return;
+
+    if (!document.fullscreenElement) {
+      video.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
   return (
     (<div
       ref={parentRef}
       className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-10 pb-20 md:px-8 md:py-40">
-      <nav className="left-0 right-0 z-50 flex items-center justify-between px-6 py-2 bg-white/80 backdrop-blur-md dark:bg-black/80">
+      <nav className="left-0 right-0 z-50 flex items-center justify-between px-6 py-2">
         <div className="flex items-center space-x-2">
           <Image 
-            src="/logo.svg" 
+            src="/logo.png" 
             alt="Lyra Logo" 
             width={32} 
             height={32}
@@ -310,6 +339,24 @@ export default function HeroSectionWithBeamsAndGrid() {
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
               </svg>
               {isMuted ? 'Unmute' : 'Mute'}
+            </button>
+            <button 
+              onClick={toggleFullscreen}
+              className="flex items-center gap-2 rounded-lg bg-black/70 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-black/80"
+            >
+              <svg 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+              Fullscreen
             </button>
           </div>
         </div>
