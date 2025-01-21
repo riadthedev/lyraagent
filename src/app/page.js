@@ -302,6 +302,30 @@ export default function HeroSectionWithBeamsAndGrid() {
         className="relative mx-auto max-w-7xl rounded-[32px] border border-neutral-200/50 bg-neutral-100 p-2 backdrop-blur-lg dark:border-neutral-700 dark:bg-neutral-800/50 md:p-4">
         <div
           className="relative rounded-[24px] border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-black">
+          <div className="md:hidden absolute top-0 left-0 right-0 bg-black/80 text-white py-1 px-2 rounded-t-[20px] text-center text-xs z-10">
+            <Link 
+              href="https://vimeo.com/1048762188/5753264abf?ts=0&share=copy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 hover:text-blue-400"
+            >
+              <span>For better viewing experience, click here</span>
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </Link>
+          </div>
           <video
             src={`${CLOUDINARY_VIDEO_URL}?quality=auto:best&format=auto`}
             autoPlay
@@ -311,7 +335,7 @@ export default function HeroSectionWithBeamsAndGrid() {
             id="heroVideo"
             className="rounded-[20px] w-full h-auto"
           />
-          <div className="absolute top-4 right-4 flex gap-2">
+          <div className="absolute bottom-4 right-4 flex gap-2">
             <button 
               onClick={() => {
                 const video = document.getElementById('heroVideo');
