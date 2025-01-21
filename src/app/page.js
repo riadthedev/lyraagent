@@ -155,7 +155,7 @@ export default function HeroSectionWithBeamsAndGrid() {
   return (
     (<div
       ref={parentRef}
-      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-10 pb-20 md:px-8 md:py-40">
+      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-10 pb-20 md:px-8 md:pt-20 md:pb-40">
       <nav className="left-0 right-0 z-50 flex items-center justify-between px-6 py-2">
         <div className="flex items-center space-x-2">
           <Image 
