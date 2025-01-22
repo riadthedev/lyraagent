@@ -16,6 +16,10 @@ const supabase = createClient(
 
 const CLOUDINARY_VIDEO_URL = "https://res.cloudinary.com/dgwmwxi45/video/upload/v1737427893/hero-video_tmp0jd.mp4";
 
+// Add these constants at the top with your other constants
+const RATE_LIMIT_DURATION = 60 * 1000; // 1 minute in milliseconds
+const MAX_ATTEMPTS = 3; // Maximum attempts per duration
+
 export default function HeroSectionWithBeamsAndGrid() {
   const containerRef = useRef(null);
   const parentRef = useRef(null);
@@ -81,14 +85,89 @@ export default function HeroSectionWithBeamsAndGrid() {
       return;
     }
   
+    // Check rate limit
+    const now = Date.now();
+    const rateLimit = JSON.parse(localStorage.getItem('rateLimitData') || '{"attempts": [], "blocked": false}');
+    
+    // Clear old attempts
+    rateLimit.attempts = rateLimit.attempts.filter(
+      timestamp => now - timestamp < RATE_LIMIT_DURATION
+    );
+
+    // Check if currently blocked
+    if (rateLimit.blocked && now - rateLimit.blockedAt < RATE_LIMIT_DURATION) {
+      const remainingTime = Math.ceil((RATE_LIMIT_DURATION - (now - rateLimit.blockedAt)) / 1000);
+      setSubmitStatus({ 
+        type: 'error', 
+        message: `Too many attempts. Please try again in ${remainingTime} seconds.` 
+      });
+      return;
+    }
+
+    // Reset blocked status if duration has passed
+    if (rateLimit.blocked && now - rateLimit.blockedAt >= RATE_LIMIT_DURATION) {
+      rateLimit.blocked = false;
+      rateLimit.attempts = [];
+    }
+
+    // Check number of attempts
+    if (rateLimit.attempts.length >= MAX_ATTEMPTS) {
+      rateLimit.blocked = true;
+      rateLimit.blockedAt = now;
+      localStorage.setItem('rateLimitData', JSON.stringify(rateLimit));
+      setSubmitStatus({ 
+        type: 'error', 
+        message: 'Too many attempts. Please try again in 60 seconds.' 
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
+
+      // Add current attempt to rate limit data
+      rateLimit.attempts.push(now);
+      localStorage.setItem('rateLimitData', JSON.stringify(rateLimit));
+
+      // First validate the email with ZeroBounce API
+      const ZEROBOUNCE_API_KEY = process.env.NEXT_PUBLIC_ZEROBOUNCE_API_KEY;
+      const validationResponse = await fetch(
+        `https://api.zerobounce.net/v2/validate?api_key=${ZEROBOUNCE_API_KEY}&email=${encodeURIComponent(email)}`,
+        { method: 'GET' }
+      );
+
+      const validationResult = await validationResponse.json();
+
+      // Check validation status and handle "did you mean" suggestions
+      if (validationResult.status !== 'valid') {
+        if (validationResult.did_you_mean) {
+          setSubmitStatus({ 
+            type: 'error', 
+            message: `Invalid email. Did you mean ${validationResult.did_you_mean}?` 
+          });
+        } else {
+          setSubmitStatus({ 
+            type: 'error', 
+            message: 'Invalid email address, please try a different one.' 
+          });
+        }
+        return;
+      }
+
+      // Extract first_name and last_name if available from ZeroBounce response
+      const first_name = validationResult.first_name || null;
+      const last_name = validationResult.last_name || null;
+
+      // If email is valid, proceed with database insertion including names
       const { error: insertError } = await supabase
         .from('email_subscribers')
-        .insert([{ email }]);
+        .insert([{ 
+          email,
+          first_name,
+          last_name 
+        }]);
   
       if (insertError) {
-        // Check for the specific Supabase duplicate key error code
         if (insertError.code === '23505') {
           setSubmitStatus({ 
             type: 'error', 
@@ -119,7 +198,7 @@ export default function HeroSectionWithBeamsAndGrid() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            content: `🎉 New Signup: ${email}`,
+            content: `🎉 New Signup:\nEmail: ${email}${first_name ? `\nFirst Name: ${first_name}` : ''}${last_name ? `\nLast Name: ${last_name}` : ''}`,
           }),
         });
       } catch (webhookError) {
